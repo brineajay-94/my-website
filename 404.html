@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Page Not Found | Ajay Kafle</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --primary: #ff6b00;
+  --secondary: #ff8c42;
+  --dark: #222;
+  --light: #fff;
+  --bg: #fafafa;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  --yellow: #f4c542;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation */
+nav {
+  background: var(--light);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.nav-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 65px;
+}
+.nav-container .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+.nav-container .logo img { height: 35px; width: auto; }
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--dark);
+  cursor: pointer;
+}
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.nav-links a {
+  text-decoration: none;
+  color: var(--dark);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.nav-links a:hover { background: #f5f5f5; color: var(--primary); }
+.nav-links .btn-primary {
+  background: var(--primary);
+  color: var(--light) !important;
+  padding: 8px 22px;
+  border-radius: 8px;
+}
+.nav-links .btn-primary:hover { background: var(--secondary); }
+
+/* 404 Hero */
+.error-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+.error-content { max-width: 600px; }
+.error-404 {
+  font-size: 10rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary), #ffb380, var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  margin-bottom: 10px;
+}
+.error-404::after {
+  content: '404';
+  font-size: 10rem;
+  font-weight: 800;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  color: rgba(0,0,0,0.03);
+  z-index: -1;
+}
+.error-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  opacity: 0.15;
+  margin-bottom: 20px;
+}
+.error-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--dark);
+}
+.error-text {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.7;
+}
+.error-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.error-actions .btn {
+  text-decoration: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-home {
+  background: var(--primary);
+  color: var(--light);
+  box-shadow: 0 4px 15px rgba(255,107,0,0.3);
+}
+.btn-home:hover { background: var(--secondary); transform: translateY(-2px); }
+.btn-outline {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+}
+.btn-outline:hover { background: var(--primary); color: var(--light); transform: translateY(-2px); }
+
+/* Quick links */
+.quick-links {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid #eee;
+}
+.quick-links p {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.quick-links-grid {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.quick-links-grid a {
+  text-decoration: none;
+  color: var(--dark);
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--light);
+  border: 1px solid #eee;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.quick-links-grid a:hover { border-color: var(--primary); color: var(--primary); box-shadow: var(--shadow); }
+
+/* Footer */
+footer {
+  background: var(--dark);
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+}
+footer a { color: var(--primary); text-decoration: none; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .hamburger { display: block; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    background: var(--light);
+    flex-direction: column;
+    padding: 15px;
+    box-shadow: var(--shadow);
+    z-index: 999;
+  }
+  .nav-links.show { display: flex; }
+  .error-404 { font-size: 6rem; }
+  .error-404::after { font-size: 6rem; }
+  .error-title { font-size: 1.4rem; }
+  .error-actions { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-container">
+    <a href="index.html" class="logo">
+      <img src="logo.png" alt="Ajay Kafle"> Ajay Kafle
+    </a>
+    <button class="hamburger" aria-label="Toggle navigation" onclick="document.getElementById('navLinks').classList.toggle('show')">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="login.html" id="navLogin">Login</a>
+      <a href="register.html" id="navRegister">Register</a>
+      <a href="dashboard.html" id="navDashboard" style="display:none;">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<section class="error-section">
+  <div class="error-content">
+    <div class="error-icon"><i class="fa-solid fa-map-signs"></i></div>
+    <div class="error-404">404</div>
+    <h1 class="error-title">Looks like you're lost</h1>
+    <p class="error-text">
+      The page you're looking for doesn't exist or has been moved.<br>
+      Let's get you back on track.
+    </p>
+    <div class="error-actions">
+      <a href="index.html" class="btn btn-home"><i class="fa-solid fa-house"></i> Back to Home</a>
+      <a href="javascript:history.back()" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Go Back</a>
+    </div>
+    <div class="quick-links">
+      <p>Popular Pages</p>
+      <div class="quick-links-grid">
+        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="plans.html"><i class="fa-solid fa-tag"></i> Plans</a>
+        <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+        <a href="support.html"><i class="fa-solid fa-headset"></i> Support</a>
+        <a href="account.html"><i class="fa-solid fa-user"></i> Account</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; <span id="year"></span> <a href="index.html">Ajay Kafle</a> &middot; All rights reserved.
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+const u = localStorage.getItem('userData');
+if (u) {
+  document.getElementById('navLogin').style.display = 'none';
+  document.getElementById('navRegister').style.display = 'none';
+  document.getElementById('navDashboard').style.display = 'inline';
+}
+</script>
+</body>
+</html>
