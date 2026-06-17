@@ -1,0 +1,33 @@
+{
+  "rules": {
+    "support": {
+      "chats": {
+        ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'admin' || root.child('users/' + auth.uid + '/role').val() === 'superadmin')",
+        ".indexOn": "lastTimestamp",
+        "$chatId": {
+          ".read": "auth != null && (auth.uid === $chatId || root.child('users/' + auth.uid + '/role').val() === 'admin' || root.child('users/' + auth.uid + '/role').val() === 'superadmin')",
+          ".write": "auth != null && (auth.uid === $chatId || root.child('users/' + auth.uid + '/role').val() === 'admin' || root.child('users/' + auth.uid + '/role').val() === 'superadmin')",
+          ".validate": "newData.hasChildren(['userId', 'userName', 'userEmail'])",
+          "messages": {
+            ".indexOn": "timestamp",
+            "$messageId": {
+              ".validate": "newData.hasChildren(['sender', 'senderName', 'text', 'timestamp', 'seen'])",
+              "sender": { ".validate": "newData.isString() && newData.val().length > 0" },
+              "senderName": { ".validate": "newData.isString() && newData.val().length > 0" },
+              "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000" },
+              "timestamp": { ".validate": "newData.isNumber()" },
+              "seen": { ".validate": "newData.isBoolean()" }
+            }
+          },
+          "userId": { ".validate": "newData.isString()" },
+          "userName": { ".validate": "newData.isString()" },
+          "userEmail": { ".validate": "newData.isString()" },
+          "lastMessage": { ".validate": "newData.isString()" },
+          "lastTimestamp": { ".validate": "newData.isNumber()" },
+          "unreadAdmin": { ".validate": "newData.isNumber()" },
+          "unreadUser": { ".validate": "newData.isNumber()" }
+        }
+      }
+    }
+  }
+}

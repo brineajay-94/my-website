@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plans & Pricing - Ajay Kafle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root {
+  --primary: #ff6b00;
+  --primary-dark: #e05f00;
+  --primary-light: #fff0e6;
+  --primary-gradient: linear-gradient(135deg, #ff6b00, #ff8c42);
+  --dark: #1a1a2e;
+  --light: #fff;
+  --bg: #f4f5f7;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --card-hover-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --text: #2c3e50;
+  --text-muted: #8e99a4;
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --border: #eef0f2;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+nav {
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100;
+  padding: 0 5%; height: 64px; display: flex; justify-content: space-between; align-items: center;
+}
+nav .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
+nav .logo img { width: 38px; height: 38px; border-radius: 50%; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-right a {
+  text-decoration: none; color: var(--text); font-weight: 500; font-size: 0.85rem;
+  padding: 7px 14px; border-radius: var(--radius-sm); transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-right a:hover { background: var(--bg); color: var(--primary); }
+.nav-right .btn-primary-nav {
+  background: var(--primary-gradient); color: white;
+}
+.nav-right .btn-primary-nav:hover { background: var(--primary); box-shadow: 0 4px 15px rgba(255,107,0,0.25); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 50px 20px 80px; }
+
+.header { text-align: center; margin-bottom: 48px; }
+.header h1 { font-family: 'Caveat', cursive; font-size: 3rem; color: var(--primary); }
+.header p { color: var(--text-muted); font-size: 1.05rem; margin-top: 8px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: start; }
+.plan-card {
+  background: var(--light); border-radius: var(--radius); box-shadow: var(--card-shadow);
+  overflow: hidden; transition: all 0.3s; position: relative;
+  display: flex; flex-direction: column;
+}
+.plan-card:hover { transform: translateY(-6px); box-shadow: var(--card-hover-shadow); }
+.plan-card.featured {
+  border: 2px solid var(--primary); transform: scale(1.03);
+  box-shadow: 0 8px 30px rgba(255,107,0,0.12);
+}
+.plan-card.featured:hover { transform: scale(1.03) translateY(-6px); }
+.plan-card .plan-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: var(--primary-gradient); color: white;
+  padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;
+}
+.plan-card .plan-header {
+  padding: 28px 24px 20px; text-align: center;
+  background: linear-gradient(135deg, rgba(255,107,0,0.04), rgba(255,140,66,0.02));
+}
+.plan-card .plan-name { font-size: 1.2rem; font-weight: 600; }
+.plan-card .plan-price { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-top: 8px; }
+.plan-card .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+.plan-card .plan-duration { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+.plan-card .plan-body { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; }
+.plan-card .plan-features { list-style: none; flex: 1; }
+.plan-card .plan-features li {
+  padding: 8px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.plan-card .plan-features li:last-child { border-bottom: none; }
+.plan-card .plan-features li i { color: var(--success); font-size: 0.8rem; width: 16px; }
+.plan-card .plan-btn {
+  display: block; text-align: center; padding: 12px; border-radius: var(--radius-sm);
+  font-weight: 600; font-size: 0.9rem; text-decoration: none; margin-top: 20px;
+  transition: all 0.2s;
+}
+.plan-card .plan-btn-primary {
+  background: var(--primary-gradient); color: white;
+}
+.plan-card .plan-btn-primary:hover { box-shadow: 0 4px 15px rgba(255,107,0,0.25); transform: translateY(-1px); }
+.plan-card .plan-btn-outline {
+  border: 2px solid var(--primary); color: var(--primary);
+}
+.plan-card .plan-btn-outline:hover { background: var(--primary); color: white; }
+
+.loading-plans { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+.loading-plans .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; height: 300px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.footer-line { text-align: center; padding: 10px 20px 30px; color: var(--text-muted); font-size: 0.8rem; }
+.footer-line a { color: var(--primary); text-decoration: none; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 16px; height: 58px; }
+  .container { padding: 30px 16px 50px; }
+  .header h1 { font-size: 2.2rem; }
+  .plans-grid { gap: 16px; }
+  .plan-card.featured { transform: none; }
+  .plan-card.featured:hover { transform: translateY(-6px); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img src="logo.png" alt="Logo">
+    <span>Ajay Kafle</span>
+  </div>
+  <div class="nav-right">
+    <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="login.html" id="navLogin"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+    <a href="register.html" id="navRegister" class="btn-primary-nav"><i class="fa-solid fa-user-plus"></i> Get Started</a>
+    <a href="dashboard.html" id="navDashboard" style="display:none;"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1>Plans & Pricing</h1>
+    <p>Choose the perfect plan for your needs. Upgrade or switch anytime.</p>
+  </div>
+
+  <div id="pricingGrid" class="plans-grid">
+    <div class="loading-plans">
+      <div class="spinner"></div>
+      <p>Loading plans...</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer-line">
+  &copy; <span id="currentYear"></span> <a href="index.html">Ajay Kafle</a> &middot; All rights reserved.
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script>
+document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+var ud = localStorage.getItem('userData');
+if (ud) {
+  document.getElementById('navLogin').style.display = 'none';
+  document.getElementById('navRegister').style.display = 'none';
+  document.getElementById('navDashboard').style.display = 'inline-flex';
+}
+
+function escapeHtml(text) {
+  var d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+async function loadPricing() {
+  var grid = document.getElementById('pricingGrid');
+
+  try {
+    var snapshot = await db.collection('plans').where('isActive', '==', true).get();
+    var plans = [];
+    snapshot.forEach(function(d) { plans.push({ id: d.id, price: d.data().price || 0, name: d.data().name, currency: d.data().currency, duration: d.data().duration, features: d.data().features || [] }); });
+    plans.sort(function(a, b) { return a.price - b.price; });
+
+    if (plans.length === 0) {
+      grid.innerHTML = '<div class="loading-plans"><i class="fa-solid fa-tag" style="font-size:3rem;opacity:0.3;margin-bottom:12px;color:var(--primary);"></i><p>No plans available yet. Check back later.</p></div>';
+      return;
+    }
+
+    var featuredIdx = plans.length > 2 ? Math.floor(plans.length / 2) : 0;
+
+    grid.innerHTML = '';
+    plans.forEach(function(plan, idx) {
+      var isFeatured = idx === featuredIdx;
+      var isFree = plan.price === 0;
+      var priceDisplay = isFree ? 'Free' : (plan.currency || 'NPR') + ' ' + plan.price;
+      var priceSub = isFree ? '' : '<span>/' + (plan.duration || 'monthly') + '</span>';
+      var features = plan.features && plan.features.length > 0 ? plan.features : ['No features listed'];
+
+      var card = document.createElement('div');
+      card.className = 'plan-card' + (isFeatured ? ' featured' : '');
+
+      var badgeHtml = isFeatured ? '<div class="plan-badge">Popular</div>' : '';
+      var loggedIn = !!localStorage.getItem('userData');
+      var btnClass = isFeatured ? 'plan-btn-primary' : 'plan-btn-outline';
+      var btnLink = loggedIn ? 'dashboard.html' : 'register.html';
+      var btnText = loggedIn ? 'Go to Dashboard' : (isFree ? 'Get Started Free' : 'Choose Plan');
+
+      var durText = isFree ? '' : plan.duration === 'monthly' ? 'per month' : plan.duration === 'yearly' ? 'per year' : 'one-time payment';
+
+      card.innerHTML = badgeHtml +
+        '<div class="plan-header"><div class="plan-name">' + escapeHtml(plan.name) + '</div>' +
+        '<div class="plan-price">' + priceDisplay + ' ' + priceSub + '</div>' +
+        '<div class="plan-duration">' + durText + '</div></div>' +
+        '<div class="plan-body"><ul class="plan-features">' +
+        features.map(function(f) { return '<li><i class="fa-solid fa-check"></i> ' + escapeHtml(f) + '</li>'; }).join('') +
+        '</ul><a href="' + btnLink + '" class="plan-btn ' + btnClass + '">' + btnText + ' <i class="fa-solid fa-arrow-right"></i></a></div>';
+      grid.appendChild(card);
+    });
+  } catch (err) {
+    grid.innerHTML = '<div class="loading-plans"><i class="fa-solid fa-triangle-exclamation" style="font-size:3rem;opacity:0.3;margin-bottom:12px;color:var(--danger);"></i><p>Failed to load plans. Please try again later.</p></div>';
+  }
+}
+
+loadPricing();
+</script>
+</body>
+</html>

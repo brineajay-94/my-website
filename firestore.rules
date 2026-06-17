@@ -1,0 +1,87 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* Helper: check if this is the predefined admin email */
+    function isAdminEmail(email) {
+      return email != null && email.lower() == 'ajaykafle254@gmail.com';
+    }
+
+    /* Helper: check if the requester is the admin by email (no get()/exists() calls) */
+    function requesterIsSuperAdmin() {
+      return request.auth != null && isAdminEmail(request.auth.token.email);
+    }
+
+    /* Helper: check if requester owns the doc */
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    /* Users collection */
+    match /users/{userId} {
+
+      // Create: self-registration only.
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.role in ['user', 'admin', 'superadmin'];
+
+      // Read: owner can read own; superadmin (by email) can read all;
+      // otherwise allow if target user is not a superadmin.
+      allow read: if isOwner(userId)
+                  || requesterIsSuperAdmin()
+                  || resource.data.role != 'superadmin';
+
+      // Update: owner can update own name/contact/verification; superadmin can update anything.
+      allow update: if (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['fullName', 'contactNumber', 'isVerified', 'verifiedAt']))
+                     || requesterIsSuperAdmin();
+
+      // Delete: only superadmin.
+      allow delete: if requesterIsSuperAdmin();
+    }
+
+    /* Websites collection */
+    match /websites/{website} {
+
+      // Create: only superadmin.
+      allow create: if requesterIsSuperAdmin()
+                    && request.resource.data.keys().hasAll(['userId', 'siteName', 'siteUrl', 'createdAt']);
+
+      // Read: owner can read own; superadmin can read all.
+      allow read: if request.auth != null
+                  && (resource.data.userId == request.auth.uid || requesterIsSuperAdmin());
+
+      // Update: only superadmin.
+      allow update: if requesterIsSuperAdmin();
+
+      // Delete: only superadmin.
+      allow delete: if requesterIsSuperAdmin();
+    }
+
+    /* Plans collection */
+    match /plans/{plan} {
+
+      // Create: only superadmin.
+      allow create: if requesterIsSuperAdmin()
+                    && request.resource.data.keys().hasAll(['name', 'price', 'createdAt']);
+
+      // Read: anyone can read active plans; superadmin can read all.
+      allow read: if resource.data.isActive == true || requesterIsSuperAdmin();
+
+      // Update: only superadmin.
+      allow update: if requesterIsSuperAdmin();
+
+      // Delete: only superadmin.
+      allow delete: if requesterIsSuperAdmin();
+    }
+
+    /* Activity log collection */
+    match /activity/{entry} {
+      allow create: if requesterIsSuperAdmin();
+      allow read: if requesterIsSuperAdmin();
+      allow update: if false;
+      allow delete: if requesterIsSuperAdmin();
+    }
+  }
+}

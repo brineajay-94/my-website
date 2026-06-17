@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Ajay Kafle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.msg-preview {
+  background: var(--light); border-radius: var(--radius-sm); padding: 14px 18px;
+  box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 12px;
+  transition: all 0.2s; cursor: pointer; text-decoration: none; color: var(--text);
+  border-left: 3px solid var(--primary); margin-bottom: 8px;
+}
+.msg-preview:hover { transform: translateY(-2px); box-shadow: var(--card-hover-shadow); }
+.msg-preview .msg-icon {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0;
+}
+.msg-preview .msg-info { flex: 1; min-width: 0; }
+.msg-preview .msg-info .msg-text { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-preview .msg-info .msg-time { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+.msg-preview .msg-info .msg-from { font-size: .72rem; color: var(--primary); font-weight: 600; }
+.msg-preview .msg-arrow { color: var(--text-muted); font-size: .85rem; }
+.msg-preview.unseen { border-left-color: var(--danger); background: #fff8f6; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">AK</div>
+    <h2>Ajay Kafle</h2>
+    <p>Admin Panel</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="index.html" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="users.html"><i class="fa-solid fa-users"></i> All Users</a>
+    <a href="websites.html"><i class="fa-solid fa-globe"></i> Websites</a>
+    <a href="verified-users.html"><i class="fa-solid fa-user-check"></i> Verified Users</a>
+    <a href="plans.html"><i class="fa-solid fa-tag"></i> Plans</a>
+    <a href="support.html"><i class="fa-solid fa-headset"></i> Support <span class="badge" id="sidebarUnread" style="display:none;">0</span></a>
+    <div class="nav-label">Links</div>
+    <a href="../dashboard.html"><i class="fa-solid fa-gauge"></i> User Dashboard</a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="../index.html"><i class="fa-solid fa-house"></i> Main Site</a>
+    <a href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <h1>Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="hide-mobile" onclick="loadAdminStats()" title="Refresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <a href="../dashboard.html" class="hide-mobile"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <button onclick="logout()" style="color:var(--danger);" title="Logout"><i class="fa-solid fa-sign-out-alt"></i> <span class="hide-mobile">Logout</span></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="quick-grid">
+      <a href="users.html" class="quick-card">
+        <div class="qc-icon qc-orange"><i class="fa-solid fa-user-plus"></i></div>
+        <div class="qc-label">Manage Users</div>
+      </a>
+      <a href="websites.html" class="quick-card">
+        <div class="qc-icon qc-blue"><i class="fa-solid fa-plus"></i></div>
+        <div class="qc-label">Add Website</div>
+      </a>
+      <a href="verified-users.html" class="quick-card">
+        <div class="qc-icon qc-green"><i class="fa-solid fa-user-check"></i></div>
+        <div class="qc-label">Verified Users</div>
+      </a>
+      <a href="../dashboard.html" class="quick-card">
+        <div class="qc-icon qc-red"><i class="fa-solid fa-gauge"></i></div>
+        <div class="qc-label">User View</div>
+      </a>
+      <a href="plans.html" class="quick-card">
+        <div class="qc-icon qc-green"><i class="fa-solid fa-tag"></i></div>
+        <div class="qc-label">Plans</div>
+      </a>
+      <a href="support.html" class="quick-card">
+        <div class="qc-icon qc-red"><i class="fa-solid fa-headset"></i></div>
+        <div class="qc-label">Support</div>
+      </a>
+    </div>
+
+    <div class="stats-grid" id="statsContainer">
+      <div class="stat-card accent1">
+        <div class="stat-bg-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-num" id="totalUsers">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card accent2">
+        <div class="stat-bg-icon"><i class="fa-solid fa-globe"></i></div>
+        <div class="stat-num" id="totalWebsites">0</div>
+        <div class="stat-label">Total Websites</div>
+      </div>
+      <div class="stat-card accent3">
+        <div class="stat-bg-icon"><i class="fa-solid fa-user-check"></i></div>
+        <div class="stat-num" id="verifiedUsers">0</div>
+        <div class="stat-label">Verified Users</div>
+      </div>
+      <div class="stat-card accent4">
+        <div class="stat-bg-icon"><i class="fa-solid fa-user-clock"></i></div>
+        <div class="stat-num" id="unverifiedUsers">0</div>
+        <div class="stat-label">Unverified Users</div>
+      </div>
+    </div>
+
+    <div class="card" id="recentMsgCard" style="display:none;">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-comment-dots"></i> Recent Messages</h3>
+        <a href="support.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-right"></i> View All</a>
+      </div>
+      <div id="recentMsgList" style="padding:4px 0;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Registrations</h3>
+      </div>
+      <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border);">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="recentTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-list"></i> Recent Activity</h3>
+        <div class="actions" id="activityActions"></div>
+      </div>
+      <div class="table-wrap" style="box-shadow:none;border:1px solid var(--border);">
+        <table>
+          <thead><tr><th>Action</th><th>Detail</th><th>By</th><th>Date</th></tr></thead>
+          <tbody id="activityTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin-ui.js"></script>
+<script src="../js/support.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = '../login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  if (!isAdmin()) { window.location.href = '../dashboard.html'; return; }
+  initSupportBadge();
+  loadAdminStats();
+  loadRecentActivities();
+  loadRecentMessages();
+});
+
+function loadRecentMessages() {
+  const card = document.getElementById('recentMsgCard');
+  const list = document.getElementById('recentMsgList');
+  CHATS_REF.orderByChild('lastTimestamp').limitToLast(5).once('value', snap => {
+    if (!snap.exists() || !snap.hasChildren()) { return; }
+    const chats = [];
+    snap.forEach(child => chats.push({ id: child.key, ...child.val() }));
+    chats.sort((a, b) => (b.lastTimestamp || 0) - (a.lastTimestamp || 0));
+    const unread = chats.filter(c => (c.unreadAdmin || 0) > 0 && c.lastMessage);
+    if (unread.length === 0) { return; }
+    card.style.display = 'block';
+    list.innerHTML = '';
+    unread.forEach(chat => {
+      const div = document.createElement('a');
+      div.className = 'msg-preview unseen';
+      div.href = 'support.html';
+      const initials = chat.userName ? chat.userName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '?';
+      div.innerHTML = '<div class="msg-icon">' + initials + '</div><div class="msg-info"><div class="msg-text">' + escapeHtml(chat.lastMessage) + '</div><div class="msg-time"><span class="msg-from">' + escapeHtml(chat.userName) + '</span> &middot; ' + formatChatTime(chat.lastTimestamp) + '</div></div><div class="msg-arrow"><i class="fa-solid fa-chevron-right"></i></div>';
+      list.appendChild(div);
+    });
+  });
+}
+
+async function loadRecentActivities() {
+  const userData = getUserData();
+  const actionsEl = document.getElementById('activityActions');
+  if (actionsEl) {
+    if (userData && userData.role === 'superadmin') {
+      actionsEl.innerHTML = '<button class="btn btn-outline btn-sm" onclick="loadRecentActivities()" title="Refresh"><i class="fa-solid fa-rotate"></i></button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="clearActivityLog()"><i class="fa-solid fa-trash-can"></i> Clear All</button>';
+    } else {
+      actionsEl.innerHTML = '<button class="btn btn-outline btn-sm" onclick="loadRecentActivities()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>';
+    }
+  }
+  const result = await apiGetRecentActivities(20);
+  const tbody = document.getElementById('activityTable');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!result.success || !result.activities.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999;">No activity yet</td></tr>';
+    return;
+  }
+  const labels = { website_added: 'Website Added', website_updated: 'Website Updated', website_deleted: 'Website Deleted', website_transferred: 'Transferred', website_unassigned: 'Unassigned', user_verified: 'User Verified', user_deleted: 'User Deleted', user_updated: 'User Updated', password_reset: 'Password Reset', plan_added: 'Plan Added', plan_toggled: 'Plan Toggled', plan_deleted: 'Plan Deleted', plan_updated: 'Plan Updated' };
+  const icons = { website_added: 'fa-globe', website_updated: 'fa-pen', website_deleted: 'fa-trash-can', website_transferred: 'fa-right-left', website_unassigned: 'fa-user-slash', user_verified: 'fa-user-check', user_deleted: 'fa-user-minus', user_updated: 'fa-user-pen', password_reset: 'fa-key', plan_added: 'fa-tag', plan_toggled: 'fa-toggle-on', plan_deleted: 'fa-tag', plan_updated: 'fa-pen' };
+  const colors = { website_added: '#27ae60', website_updated: '#2980b9', website_deleted: '#e74c3c', website_transferred: '#f39c12', website_unassigned: '#e67e22', user_verified: '#27ae60', user_deleted: '#e74c3c', user_updated: '#2980b9', password_reset: '#8e44ad', plan_added: '#1abc9c', plan_toggled: '#f39c12', plan_deleted: '#e74c3c', plan_updated: '#2980b9' };
+  result.activities.forEach(a => {
+    const tr = document.createElement('tr');
+    const label = labels[a.type] || a.type;
+    const icon = icons[a.type] || 'fa-circle';
+    const color = colors[a.type] || '#999';
+    tr.innerHTML = '<td><span style="display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid ' + icon + '" style="color:' + color + ';width:16px;"></i> ' + escapeHtml(label) + '</span></td><td>' + escapeHtml(a.detail || a.targetName || '-') + '</td><td>' + escapeHtml(a.performedBy) + '</td><td class="text-muted">' + (a.createdAt ? a.createdAt.split('T')[0] + ' ' + a.createdAt.split('T')[1].slice(0,5) : '-') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+async function clearActivityLog() {
+  const id = createModal('Clear Activity Log', `
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:3rem;color:#e74c3c;margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <p style="font-size:1rem;color:#444;margin:0 0 6px;">Delete all activity logs?</p>
+      <p style="font-size:0.85rem;color:#999;margin:0;">This action cannot be undone.</p>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-danger" id="clear-act-confirm">Clear All</button>
+    </div>
+  `);
+  document.getElementById('clear-act-confirm').onclick = async () => {
+    closeParentModal(document.getElementById('clear-act-confirm'));
+    const result = await apiClearActivity();
+    if (result.success) { toast('Activity log cleared', 'success'); loadRecentActivities(); }
+    else { toast('Failed: ' + result.error, 'error'); }
+  };
+}
+</script>
+</body>
+</html>

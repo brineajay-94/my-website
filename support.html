@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support - Ajay Kafle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Poppins', sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+.navbar { background: #1a1a2e; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; color: white; flex-shrink: 0; }
+.navbar .brand { font-family: 'Caveat', cursive; font-size: 1.5rem; color: #ff6b00; text-decoration: none; }
+.navbar .nav-links { display: flex; gap: 16px; align-items: center; }
+.navbar .nav-links a { color: #ccc; text-decoration: none; font-size: 0.85rem; }
+.navbar .nav-links a:hover { color: #ff6b00; }
+.container { flex: 1; min-height: 0; max-width: 800px; width: 100%; margin: 20px auto; padding: 0 16px; display: flex; flex-direction: column; box-sizing: border-box; }
+.chat-wrapper { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.chat-header { background: #1a1a2e; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.chat-header .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ff6b00; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1rem; flex-shrink: 0; }
+.chat-header .info { flex: 1; }
+.chat-header .info h3 { font-size: 0.95rem; font-weight: 600; }
+.chat-header .info p { font-size: 0.75rem; color: #aaa; }
+.chat-messages { flex: 1; min-height: 0; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; position: relative; word-wrap: break-word; }
+.msg.sent { align-self: flex-end; background: #ff6b00; color: white; border-bottom-right-radius: 4px; }
+.msg.received { align-self: flex-start; background: white; color: #333; border: 1px solid #e0e0e0; border-bottom-left-radius: 4px; }
+.msg .sender-name { font-size: 0.7rem; font-weight: 600; margin-bottom: 2px; opacity: 0.8; }
+.msg .time { font-size: 0.65rem; opacity: 0.7; margin-top: 4px; text-align: right; }
+.msg .status { font-size: 0.65rem; margin-left: 4px; }
+.msg .status .seen { color: #4fc3f7; }
+.msg .undo-btn { font-size: 0.6rem; color: #e74c3c; cursor: pointer; margin-left: 8px; text-decoration: underline; background: none; border: none; font-family: 'Poppins', sans-serif; padding: 0; }
+.msg .undo-btn:hover { color: #c0392b; }
+.msg.deleted { opacity: 0.5; }
+.msgs-loading, .msgs-empty { text-align: center; color: #999; padding: 40px 20px; font-size: 0.88rem; }
+.chat-input { display: flex; padding: 12px 16px; gap: 10px; background: white; border-top: 1px solid #e8e8e8; }
+.chat-input input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 24px; outline: none; font-family: 'Poppins', sans-serif; font-size: 0.85rem; transition: border 0.2s; }
+.chat-input input:focus { border-color: #ff6b00; }
+.chat-input button { width: 42px; height: 42px; border-radius: 50%; border: none; background: #ff6b00; color: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+.chat-input button:hover { background: #e55e00; }
+.chat-input button:disabled { background: #ccc; cursor: not-allowed; }
+.loading-screen { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; color: #999; }
+.loading-screen i { font-size: 2rem; margin-bottom: 12px; }
+.loading-screen div { text-align: center; }
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { padding: 12px 18px; border-radius: 8px; color: white; font-size: 0.85rem; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; min-width: 260px; max-width: 400px; pointer-events: auto; animation: slideIn 0.3s ease; }
+.toast-success { background: #27ae60; }
+.toast-error { background: #e74c3c; }
+.toast-info { background: #3498db; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@media (max-width: 600px) {
+  .container { margin: 0; padding: 0; max-width: 100%; }
+  .chat-wrapper { border-radius: 0; }
+  .navbar { padding: 10px 16px; }
+}
+.unverified-banner {
+  background: #fff3e0; border-bottom: 2px solid #ff9800; padding: 10px 20px;
+  display: flex; align-items: center; gap: 10px; font-size: .88rem; color: #e65100;
+  position: sticky; top: 0; z-index: 100;
+}
+.unverified-banner i { font-size: 1.1rem; }
+.unverified-banner a { color: var(--primary); font-weight: 600; text-decoration: underline; }
+.unverified-banner .banner-close {
+  margin-left: auto; background: none; border: none; font-size: 1.3rem;
+  cursor: pointer; color: #e65100; padding: 0 4px; line-height: 1;
+}
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; backdrop-filter: blur(2px);
+}
+.modal-overlay.active { opacity: 1; }
+.modal-box {
+  background: white; border-radius: 14px; max-width: 440px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 22px 0; font-size: 1rem;
+}
+.modal-body { padding: 18px 22px 22px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.btn-modal {
+  padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; border: none; font-family: 'Poppins', sans-serif; transition: 0.15s;
+}
+.btn-modal-secondary { background: #eee; color: #333; }
+.btn-modal-secondary:hover { background: #ddd; }
+.btn-modal-danger { background: #e74c3c; color: white; }
+.btn-modal-danger:hover { background: #c0392b; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="brand">Ajay Kafle</a>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="#" onclick="logout()" style="color:#ff6b00;">Logout</a>
+  </div>
+</nav>
+<div id="unverifiedBanner" class="unverified-banner" style="display:none;">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span>Your account is not verified. <a href="account.html">Add a phone number</a> to get verified.</span>
+  <button onclick="this.parentElement.style.display='none'" class="banner-close">&times;</button>
+</div>
+<div class="container">
+  <div id="loadingScreen" class="loading-screen">
+    <div><i class="fa-solid fa-spinner fa-spin"></i><p>Connecting...</p></div>
+  </div>
+  <div id="chatWrapper" class="chat-wrapper" style="display:none;">
+    <div class="chat-header">
+      <div class="avatar"><i class="fa-solid fa-headset"></i></div>
+      <div class="info">
+        <h3>Support Team</h3>
+        <p>We typically reply within a few hours</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="msgInput" placeholder="Type your message..." autocomplete="off" maxlength="1000">
+      <button id="sendBtn" onclick="handleSend()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/support.js"></script>
+<script>
+let user = null;
+let chatId = null;
+let msgListener = null;
+let msgRefStore = null;
+
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = 'login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  const data = getUserData();
+  if (!data) { window.location.href = 'login.html'; return; }
+  user = data;
+  const banner = document.getElementById('unverifiedBanner');
+  if (banner) {
+    if (data.isVerified === true) {
+      banner.style.display = 'none';
+    } else {
+      banner.style.display = 'flex';
+      const msg = banner.querySelector('span');
+      if (msg) {
+        if (data.verifiedAt) {
+          msg.innerHTML = 'Your verification was revoked by an admin. <a href="account.html">Contact support</a> if you have questions.';
+        } else {
+          msg.innerHTML = 'Your account is not verified. <a href="account.html">Add a phone number</a> to get verified.';
+        }
+      }
+    }
+  }
+  chatId = chatIdFromUser(user.id);
+  initChat();
+});
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.innerHTML = '<i class="fa-solid fa-circle-info"></i> ' + escapeHtml(msg);
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+function renderMessages(messages) {
+  const container = document.getElementById('chatMessages');
+  const emptyEl = container.querySelector('.msgs-empty');
+  if (emptyEl) emptyEl.remove();
+  const loadingEl = container.querySelector('.msgs-loading');
+  if (loadingEl) loadingEl.remove();
+  if (messages.length === 0 && container.children.length === 0) {
+    container.innerHTML = '<div class="msgs-empty"><i class="fa-solid fa-comment-dots" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Start a conversation with the support team</div>';
+    return;
+  }
+  messages.forEach(m => appendMessage(m, container));
+}
+
+function appendMessage(msg, container) {
+  const isMine = msg.sender === user.id || msg.sender === user.uid;
+  const div = document.createElement('div');
+  div.className = 'msg ' + (isMine ? 'sent' : 'received');
+  div.dataset.msgId = msg._key;
+  let html = '';
+  if (!isMine) html += '<div class="sender-name">' + escapeHtml(msg.senderName) + '</div>';
+  html += '<div class="text">' + escapeHtml(msg.text) + '</div>';
+  const seenIcon = msg.seen ? '<span class="seen"><i class="fa-solid fa-check-double"></i></span>' : '<span><i class="fa-solid fa-check"></i></span>';
+  const undo = isMine && (Date.now() - msg.timestamp < 300000) ? '<button class="undo-btn" onclick="undoMessage(\'' + chatId + '\',\'' + msg._key + '\')">Undo</button>' : '';
+  html += '<div class="time">' + formatChatTime(msg.timestamp) + (isMine ? ' <span class="status">' + seenIcon + '</span>' : '') + undo + '</div>';
+  div.innerHTML = html;
+  container.appendChild(div);
+  scrollToBottom(container);
+}
+
+function startListening() {
+  if (msgRefStore) { msgRefStore.off(); msgRefStore = null; msgListener = null; }
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '<div class="msgs-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading messages...</div>';
+  const msgRef = messagesRef(chatId);
+  msgRefStore = msgRef;
+  msgListener = msgRef.orderByChild('timestamp').on('child_added', (snap) => {
+    const msg = snap.val();
+    if (!msg) return;
+    const loadingEl = container.querySelector('.msgs-loading');
+    if (loadingEl) loadingEl.remove();
+    const emptyEl = container.querySelector('.msgs-empty');
+    if (emptyEl) emptyEl.remove();
+    msg._key = snap.key;
+    const existing = container.querySelector('[data-msgid="' + snap.key + '"]');
+    if (existing) return;
+    const isMine = msg.sender === user.id || msg.sender === user.uid;
+    const div = document.createElement('div');
+    div.className = 'msg ' + (isMine ? 'sent' : 'received');
+    div.dataset.msgId = snap.key;
+    let html = '';
+    if (!isMine) html += '<div class="sender-name">' + escapeHtml(msg.senderName) + '</div>';
+    html += '<div class="text">' + escapeHtml(msg.text) + '</div>';
+    const seenIcon = msg.seen ? '<span class="seen"><i class="fa-solid fa-check-double"></i></span>' : '<span><i class="fa-solid fa-check"></i></span>';
+    const undo = isMine && (Date.now() - msg.timestamp < 300000) ? '<button class="undo-btn" onclick="undoMessage(\'' + chatId + '\',\'' + snap.key + '\')">Undo</button>' : '';
+    html += '<div class="time">' + formatChatTime(msg.timestamp) + (isMine ? ' <span class="status">' + seenIcon + '</span>' : '') + undo + '</div>';
+    div.innerHTML = html;
+    container.appendChild(div);
+    scrollToBottom(container);
+    if (!isMine && !msg.seen) {
+      msgRef.child(snap.key).update({ seen: true });
+      chatRef(chatId).child('unreadUser').set(0);
+    }
+  });
+  msgRef.once('value', snap => {
+    if (!snap.exists() || !snap.hasChildren()) {
+      container.innerHTML = '<div class="msgs-empty"><i class="fa-solid fa-comment-dots" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Start a conversation with the support team</div>';
+    }
+  });
+  msgRef.on('child_removed', (snap) => {
+    const el = container.querySelector('[data-msgid="' + snap.key + '"]');
+    if (el) el.remove();
+    if (container.children.length === 0) {
+      container.innerHTML = '<div class="msgs-empty"><i class="fa-solid fa-comment-dots" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Start a conversation with the support team</div>';
+    }
+  });
+}
+
+async function initChat() {
+  const loadingScreen = document.getElementById('loadingScreen');
+  const chatWrapper = document.getElementById('chatWrapper');
+  try {
+    await createOrGetChat(user.id, user.fullName, user.email);
+    loadingScreen.style.display = 'none';
+    chatWrapper.style.display = 'flex';
+    startListening();
+  } catch (err) {
+    loadingScreen.innerHTML = '<div><i class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;"></i><p>Failed to load chat: ' + err.message + '</p><button onclick="initChat()" style="margin-top:12px;padding:8px 20px;border:none;border-radius:6px;background:#ff6b00;color:white;cursor:pointer;">Retry</button></div>';
+  }
+}
+
+function handleSend() {
+  const input = document.getElementById('msgInput');
+  const btn = document.getElementById('sendBtn');
+  if (!chatId) return;
+  const text = input.value.trim();
+  if (!text) return;
+  btn.disabled = true;
+  sendMessage(chatId, user.id, user.fullName, text).then(() => {
+    input.value = '';
+    btn.disabled = false;
+    chatRef(chatId).update({ unreadAdmin: firebase.database.ServerValue.increment(1) });
+  }).catch(err => {
+    btn.disabled = false;
+    toast('Failed to send: ' + err.message, 'error');
+  });
+}
+
+document.getElementById('msgInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleSend();
+});
+
+function undoMessage(chatId, msgKey) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = '<div class="modal-box"><div class="modal-header"><h3>Confirm</h3></div><div class="modal-body"><p style="margin:0 0 20px;font-size:0.95rem;color:#444;">Undo this message?</p><div class="modal-actions"><button class="btn-modal btn-modal-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancel</button><button class="btn-modal btn-modal-danger" id="undo-yes">Undo</button></div></div></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('undo-yes').onclick = () => {
+    overlay.remove();
+    deleteMessage(chatId, msgKey).catch(err => toast('Failed to undo: ' + err.message, 'error'));
+  };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plans - Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">AK</div>
+    <h2>Ajay Kafle</h2>
+    <p>Admin Panel</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="index.html"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="users.html"><i class="fa-solid fa-users"></i> All Users</a>
+    <a href="websites.html"><i class="fa-solid fa-globe"></i> Websites</a>
+    <a href="verified-users.html"><i class="fa-solid fa-user-check"></i> Verified Users</a>
+    <a href="plans.html" class="active"><i class="fa-solid fa-tag"></i> Plans</a>
+    <a href="support.html"><i class="fa-solid fa-headset"></i> Support <span class="badge" id="sidebarUnread" style="display:none;">0</span></a>
+    <div class="nav-label">Links</div>
+    <a href="../dashboard.html"><i class="fa-solid fa-gauge"></i> User Dashboard</a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="../index.html"><i class="fa-solid fa-house"></i> Main Site</a>
+    <a href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <h1>Plans</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box hide-mobile">
+        <i class="fa-solid fa-search"></i>
+        <input type="text" id="planSearch" placeholder="Search plans..." autocomplete="off">
+      </div>
+      <button onclick="loadPlans()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-header">
+      <h2><i class="fa-solid fa-tag"></i> Plans & Pricing <span class="badge badge-info" id="planCount">0</span></h2>
+      <div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('plansTable','plans-export')"><i class="fa-solid fa-download"></i> Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddPlan()"><i class="fa-solid fa-plus"></i> Add Plan</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Price</th><th>Duration</th><th>Max Websites</th><th>Features</th><th>Active</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="plansTable"></tbody>
+      </table>
+      <div class="empty-state empty-search" style="display:none;"><i class="fa-solid fa-search"></i><h3>No matches</h3><p>Try a different search term</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin-ui.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = '../login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  if (!isAdmin()) { window.location.href = '../dashboard.html'; return; }
+  initSupportBadge();
+  loadPlans();
+  setTimeout(() => initTableSearch('planSearch', 'plansTable'), 500);
+});
+
+async function loadPlans() {
+  const result = await apiGetPlans(false);
+  if (!result.success) { toast('Failed to load plans', 'error'); return; }
+  const tbody = document.getElementById('plansTable');
+  tbody.innerHTML = '';
+  const countEl = document.getElementById('planCount');
+  if (countEl) countEl.textContent = result.plans.length;
+  result.plans.forEach(p => {
+    const tr = document.createElement('tr');
+    const feats = p.features && p.features.length ? p.features.join(', ') : '-';
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(p.name)}</strong></td>
+      <td>${escapeHtml(p.currency)} ${p.price}</td>
+      <td>${escapeHtml(p.duration)}</td>
+      <td>${p.maxWebsites || 'Unlimited'}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(feats)}">${escapeHtml(feats)}</td>
+      <td>${p.isActive !== false ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-warning">Inactive</span>'}</td>
+      <td class="text-muted">${p.createdAt ? p.createdAt.split('T')[0] : '-'}</td>
+      <td class="action-cell">
+        <button onclick="showPlanSites('${p.id}','${escapeHtml(p.name)}')" class="btn-icon btn-icon-sites" title="View Sites"><i class="fa-solid fa-globe"></i></button>
+        <button onclick="editPlan('${p.id}')" class="btn-icon btn-icon-edit" title="Edit"><i class="fa-solid fa-pen"></i></button>
+        <button onclick="togglePlan('${p.id}','${p.isActive !== false}','${escapeHtml(p.name)}')" class="btn-icon btn-icon-verify" title="${p.isActive !== false ? 'Deactivate' : 'Activate'}"><i class="fa-solid ${p.isActive !== false ? 'fa-toggle-on' : 'fa-toggle-off'}"></i></button>
+        <button onclick="deletePlan('${p.id}','${escapeHtml(p.name)}')" class="btn-icon btn-icon-delete" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function showPlanSites(planId, planName) {
+  const uid = ++modalIdCounter;
+  const id = createModal('Sites — ' + escapeHtml(planName), `
+    <div id="psites-loading-${uid}" style="text-align:center;padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+    <div id="psites-content-${uid}" style="display:none;"></div>
+  `);
+  const result = await apiAdminGetAllWebsites();
+  const contentEl = document.getElementById('psites-content-' + uid);
+  const loadingEl = document.getElementById('psites-loading-' + uid);
+  if (!result.success) {
+    if (loadingEl) loadingEl.innerHTML = '<span class="text-muted">Failed to load websites</span>';
+    return;
+  }
+  const planSites = result.websites.filter(w => w.planId === planId || w.planName === planName);
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (contentEl) contentEl.style.display = 'block';
+  if (!contentEl) return;
+  if (!planSites.length) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:20px;color:#999;"><i class="fa-solid fa-circle-info"></i> No websites assigned to this plan.</div>';
+    return;
+  }
+  contentEl.innerHTML = planSites.map(w => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
+      <div>
+        <strong>${escapeHtml(w.siteName)}</strong>
+        <div style="font-size:0.8rem;color:#888;">${escapeHtml(w.siteUrl)}</div>
+        <div style="font-size:0.75rem;color:#aaa;margin-top:2px;">User: ${escapeHtml(w.userName)} &middot; ${w.createdAt ? w.createdAt.split('T')[0] : '-'}</div>
+      </div>
+    </div>
+  `).join('');
+  contentEl.innerHTML += '<div class="modal-actions" style="margin-top:16px;"><button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Close</button></div>';
+}
+
+function openAddPlan() {
+  const uid = ++modalIdCounter;
+  const id = createModal('Add Plan', `
+    <div class="modal-field">
+      <label>Plan Name <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="plan-name-${uid}" placeholder="e.g. Basic, Pro, Enterprise">
+    </div>
+    <div class="modal-field">
+      <label>Price <span style="color:var(--danger);">*</span></label>
+      <input type="number" id="plan-price-${uid}" value="0" min="0" step="1">
+    </div>
+    <div class="modal-field">
+      <label>Currency</label>
+      <select id="plan-currency-${uid}">
+        <option value="NPR">NPR</option>
+        <option value="USD">USD</option>
+        <option value="INR">INR</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Duration</label>
+      <select id="plan-duration-${uid}">
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+        <option value="one-time">One Time</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Max Websites (0 = unlimited)</label>
+      <input type="number" id="plan-max-${uid}" value="0" min="0">
+    </div>
+    <div class="modal-field">
+      <label>Features (comma separated)</label>
+      <textarea id="plan-features-${uid}" rows="3" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:0.88rem;" placeholder="e.g. 1 Website, Basic Support, SSL Certificate"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-primary" id="plan-save-${uid}">Save Plan</button>
+    </div>
+  `);
+  document.getElementById('plan-save-' + uid).onclick = async () => {
+    const name = document.getElementById('plan-name-' + uid).value.trim();
+    const price = document.getElementById('plan-price-' + uid).value.trim();
+    if (!name || price === '') { toast('Name and Price are required', 'error'); return; }
+    const features = document.getElementById('plan-features-' + uid).value.trim();
+    closeModal(id);
+    const result = await apiAddPlan({
+      name, price: Number(price),
+      currency: document.getElementById('plan-currency-' + uid).value,
+      duration: document.getElementById('plan-duration-' + uid).value,
+      maxWebsites: Number(document.getElementById('plan-max-' + uid).value) || 0,
+      features: features ? features.split(',').map(f => f.trim()).filter(f => f) : []
+    });
+    if (result.success) { toast('Plan added', 'success'); apiLogActivity('plan_added', 'Added plan ' + name, name); loadPlans(); }
+    else { toast('Failed: ' + result.error, 'error'); }
+  };
+}
+
+async function togglePlan(planId, isActive, planName) {
+  const val = isActive === 'true';
+  const result = await apiUpdatePlan(planId, { isActive: !val });
+  if (result.success) { toast('Plan updated', 'success'); apiLogActivity('plan_toggled', 'Toggled plan active=' + !val, planName || 'Unknown'); loadPlans(); }
+}
+
+function editPlan(planId) {
+  const rows = document.querySelectorAll('#plansTable tr');
+  let planData = null;
+  for (const row of rows) {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 8) {
+      const name = cells[0].textContent.trim();
+      const priceStr = cells[1].textContent.trim();
+      const duration = cells[2].textContent.trim();
+      const maxWebsites = cells[3].textContent.trim();
+      const featsText = cells[4].getAttribute('title') || cells[4].textContent.trim();
+      const isActive = cells[5].querySelector('.badge-success') !== null;
+      if (name) {
+        const priceMatch = priceStr.match(/[A-Z]+\s+([\d.]+)/);
+        planData = {
+          id: planId, name, price: priceMatch ? priceMatch[1] : '0',
+          currency: priceStr.split(' ')[0] || 'NPR',
+          duration, maxWebsites: maxWebsites === 'Unlimited' ? '0' : maxWebsites,
+          features: featsText === '-' ? '' : featsText, isActive
+        };
+        break;
+      }
+    }
+  }
+  if (!planData) { toast('Plan not found', 'error'); return; }
+  const uid = ++modalIdCounter;
+  const id = createModal('Edit Plan', `
+    <div class="modal-field">
+      <label>Plan Name <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="plan-edit-name-${uid}" value="${escapeHtml(planData.name)}">
+    </div>
+    <div class="modal-field">
+      <label>Price <span style="color:var(--danger);">*</span></label>
+      <input type="number" id="plan-edit-price-${uid}" value="${planData.price}" min="0" step="1">
+    </div>
+    <div class="modal-field">
+      <label>Currency</label>
+      <select id="plan-edit-currency-${uid}">
+        <option value="NPR" ${planData.currency === 'NPR' ? 'selected' : ''}>NPR</option>
+        <option value="USD" ${planData.currency === 'USD' ? 'selected' : ''}>USD</option>
+        <option value="INR" ${planData.currency === 'INR' ? 'selected' : ''}>INR</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Duration</label>
+      <select id="plan-edit-duration-${uid}">
+        <option value="monthly" ${planData.duration === 'monthly' ? 'selected' : ''}>Monthly</option>
+        <option value="yearly" ${planData.duration === 'yearly' ? 'selected' : ''}>Yearly</option>
+        <option value="one-time" ${planData.duration === 'one-time' ? 'selected' : ''}>One Time</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Max Websites (0 = unlimited)</label>
+      <input type="number" id="plan-edit-max-${uid}" value="${planData.maxWebsites}" min="0">
+    </div>
+    <div class="modal-field">
+      <label>Features (comma separated)</label>
+      <textarea id="plan-edit-features-${uid}" rows="3" style="width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:0.88rem;">${escapeHtml(planData.features)}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-primary" id="plan-edit-save-${uid}">Save Changes</button>
+    </div>
+  `);
+  document.getElementById('plan-edit-save-' + uid).onclick = async () => {
+    const name = document.getElementById('plan-edit-name-' + uid).value.trim();
+    const price = document.getElementById('plan-edit-price-' + uid).value.trim();
+    if (!name || price === '') { toast('Name and Price are required', 'error'); return; }
+    const features = document.getElementById('plan-edit-features-' + uid).value.trim();
+    closeModal(id);
+    const result = await apiUpdatePlan(planId, {
+      name, price: Number(price),
+      currency: document.getElementById('plan-edit-currency-' + uid).value,
+      duration: document.getElementById('plan-edit-duration-' + uid).value,
+      maxWebsites: Number(document.getElementById('plan-edit-max-' + uid).value) || 0,
+      features: features ? features.split(',').map(f => f.trim()).filter(f => f) : []
+    });
+    if (result.success) { toast('Plan updated', 'success'); apiLogActivity('plan_updated', 'Updated plan ' + name, name); loadPlans(); }
+    else { toast('Failed: ' + result.error, 'error'); }
+  };
+}
+
+async function deletePlan(planId, planName) {
+  const uid = ++modalIdCounter;
+  const id = createModal('Delete Plan', `
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:3rem;color:#e74c3c;margin-bottom:12px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <p style="font-size:1rem;color:#444;margin:0 0 6px;">Delete this plan?</p>
+      <p style="font-size:0.85rem;color:#999;margin:0;">Websites using this plan will retain the plan name but you cannot restore this plan.</p>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-danger" id="plan-del-${uid}">Delete</button>
+    </div>
+  `);
+  document.getElementById('plan-del-' + uid).onclick = async () => {
+    closeModal(id);
+    const result = await apiDeletePlan(planId);
+    if (result.success) { toast('Plan deleted', 'success'); apiLogActivity('plan_deleted', 'Deleted plan ' + (planName || 'Unknown'), planName || 'Unknown'); loadPlans(); }
+    else { toast('Failed: ' + result.error, 'error'); }
+  };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Websites - Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">AK</div>
+    <h2>Ajay Kafle</h2>
+    <p>Admin Panel</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="index.html"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="users.html"><i class="fa-solid fa-users"></i> All Users</a>
+    <a href="websites.html" class="active"><i class="fa-solid fa-globe"></i> Websites</a>
+    <a href="verified-users.html"><i class="fa-solid fa-user-check"></i> Verified Users</a>
+    <a href="plans.html"><i class="fa-solid fa-tag"></i> Plans</a>
+    <a href="support.html"><i class="fa-solid fa-headset"></i> Support <span class="badge" id="sidebarUnread" style="display:none;">0</span></a>
+    <div class="nav-label">Links</div>
+    <a href="../dashboard.html"><i class="fa-solid fa-gauge"></i> User Dashboard</a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="../index.html"><i class="fa-solid fa-house"></i> Main Site</a>
+    <a href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <h1>Websites</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box hide-mobile">
+        <i class="fa-solid fa-search"></i>
+        <input type="text" id="webSearch" placeholder="Search websites..." autocomplete="off">
+      </div>
+      <button onclick="openAddWebsite()" title="Add Website"><i class="fa-solid fa-plus"></i> <span class="hide-mobile">Add</span></button>
+      <button onclick="loadWebsites()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-header">
+      <h2><i class="fa-solid fa-globe"></i> All Websites <span class="badge badge-info" id="webCount">0</span></h2>
+      <div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('websitesTable','websites-export')"><i class="fa-solid fa-download"></i> Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddWebsite()"><i class="fa-solid fa-plus"></i> Add Website</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Site Name</th><th>URL</th><th>Control Panel</th><th>Assigned To</th><th>Plan</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="websitesTable"></tbody>
+      </table>
+      <div class="empty-state empty-search" style="display:none;"><i class="fa-solid fa-search"></i><h3>No matches</h3><p>Try a different search term</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin-ui.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = '../login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  if (!isAdmin()) { window.location.href = '../dashboard.html'; return; }
+  initSupportBadge();
+  loadWebsites();
+  setTimeout(() => initTableSearch('webSearch', 'websitesTable'), 500);
+});
+</script>
+</body>
+</html>

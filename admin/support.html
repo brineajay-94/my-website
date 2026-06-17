@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support Chat - Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.support-layout { display: flex; gap: 0; background: white; border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; height: calc(100vh - 140px); min-height: 0; }
+.chat-list-panel { width: 320px; border-right: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; }
+.chat-list-panel .panel-header { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+.chat-list-panel .panel-header h3 { font-size: 0.9rem; font-weight: 600; }
+.chat-list-panel .panel-header p { font-size: 0.75rem; color: var(--text-muted); }
+.chat-list { flex: 1; min-height: 0; overflow-y: auto; }
+.chat-preview { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: 0.15s; border-bottom: 1px solid #f5f5f5; }
+.chat-preview:hover { background: #fafbfc; }
+.chat-preview.active { background: var(--primary-light); border-left: 3px solid var(--primary); }
+.chat-preview .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; }
+.chat-preview .info { flex: 1; min-width: 0; }
+.chat-preview .info .name { font-size: 0.85rem; font-weight: 500; }
+.chat-preview .info .last-msg { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-preview .meta { text-align: right; flex-shrink: 0; }
+.chat-preview .meta .time { font-size: 0.65rem; color: var(--text-muted); }
+.chat-preview .meta .unread { background: var(--primary); color: white; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 4px; font-weight: 600; }
+.chat-view-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.chat-view-panel .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted); min-height: 0; }
+.chat-view-panel .empty-state i { font-size: 3rem; margin-bottom: 12px; opacity: 0.3; }
+.chat-view-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.chat-view-header .back-btn { display: none; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-muted); padding: 4px; }
+.chat-view-header .back-btn:hover { color: var(--text); }
+.chat-view-header .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+.chat-view-header .info h4 { font-size: 0.9rem; font-weight: 600; }
+.chat-view-header .info p { font-size: 0.7rem; color: var(--text-muted); }
+.chat-view-header .delete-btn { margin-left: auto; background: none; border: none; color: var(--danger); font-size: 1rem; cursor: pointer; padding: 6px; border-radius: var(--radius-sm); transition: background 0.2s; }
+.chat-view-header .delete-btn:hover { background: #fee8e8; }
+.chat-messages { flex: 1; min-height: 0; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; word-wrap: break-word; }
+.msg.sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+.msg.received { align-self: flex-start; background: white; color: var(--text); border: 1px solid #e0e0e0; border-bottom-left-radius: 4px; }
+.msg .sender-name { font-size: 0.68rem; font-weight: 600; margin-bottom: 2px; opacity: 0.8; }
+.msg .time { font-size: 0.64rem; opacity: 0.7; margin-top: 4px; text-align: right; }
+.msg .status { font-size: 0.64rem; margin-left: 4px; }
+.msg .status .seen { color: #4fc3f7; }
+.chat-input-area { display: flex; padding: 12px 16px; gap: 10px; background: white; border-top: 1px solid #e8e8e8; }
+.chat-input-area input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 24px; outline: none; font-family: var(--font); font-size: 0.85rem; transition: border 0.2s; }
+.chat-input-area input:focus { border-color: var(--primary); }
+.chat-input-area button { width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--primary); color: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+.chat-input-area button:hover { background: var(--primary-dark); }
+.chat-input-area button:disabled { background: #ccc; cursor: not-allowed; }
+@media (max-width: 768px) {
+  .support-layout { height: calc(100vh - 130px); min-height: 0; border-radius: 0; }
+  .chat-list-panel { width: 100%; border-right: none; }
+  .chat-list-panel.hide-mobile-panel { display: none; }
+  .chat-view-panel { display: none; }
+  .chat-view-panel.show-mobile-panel { display: flex; width: 100%; }
+  .chat-view-header .back-btn { display: flex; }
+  .chat-view-panel .empty-state { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">AK</div>
+    <h2>Ajay Kafle</h2>
+    <p>Admin Panel</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="index.html"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="users.html"><i class="fa-solid fa-users"></i> All Users</a>
+    <a href="websites.html"><i class="fa-solid fa-globe"></i> Websites</a>
+    <a href="verified-users.html"><i class="fa-solid fa-user-check"></i> Verified Users</a>
+    <a href="plans.html"><i class="fa-solid fa-tag"></i> Plans</a>
+    <a href="support.html" class="active"><i class="fa-solid fa-headset"></i> Support <span class="badge" id="sidebarUnread" style="display:none;">0</span></a>
+    <div class="nav-label">Links</div>
+    <a href="../dashboard.html"><i class="fa-solid fa-gauge"></i> User Dashboard</a>
+    <a href="../support.html"><i class="fa-solid fa-comment-dots"></i> User Support</a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="../index.html"><i class="fa-solid fa-house"></i> Main Site</a>
+    <a href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <h1>Support Chat</h1>
+    </div>
+    <div class="topbar-right">
+      <button onclick="logout()" style="color:var(--danger);" title="Logout"><i class="fa-solid fa-sign-out-alt"></i> <span class="hide-mobile">Logout</span></button>
+    </div>
+  </div>
+
+  <div class="content" style="padding-bottom:0;">
+    <div class="support-layout">
+      <div class="chat-list-panel" id="chatListPanel">
+        <div class="panel-header">
+          <h3><i class="fa-solid fa-comments"></i> Conversations</h3>
+          <p id="chatCount">Loading...</p>
+        </div>
+        <div class="chat-list" id="chatList"></div>
+      </div>
+      <div class="chat-view-panel" id="chatViewPanel">
+        <div class="empty-state" id="chatViewEmpty">
+          <i class="fa-solid fa-comment-dots"></i>
+          <h3>Select a conversation</h3>
+          <p>Choose a chat from the left to view messages</p>
+        </div>
+        <div id="chatViewActive" style="display:none;flex-direction:column;flex:1;min-height:0;">
+          <div class="chat-view-header">
+            <button class="back-btn" onclick="showChatList()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="avatar" id="activeChatAvatar">AK</div>
+            <div class="info">
+              <h4 id="activeChatName">User Name</h4>
+              <p id="activeChatEmail">user@example.com</p>
+            </div>
+            <button class="delete-btn" id="deleteConversationBtn" title="Delete conversation"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-area">
+            <input type="text" id="adminMsgInput" placeholder="Type your reply..." autocomplete="off" maxlength="1000">
+            <button id="adminSendBtn" onclick="handleAdminSend()"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin-ui.js"></script>
+<script src="../js/support.js"></script>
+<script>
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = '../login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  if (!isAdmin()) { window.location.href = '../dashboard.html'; return; }
+
+const adminUser = getUserData();
+let activeChatId = null;
+let activeMsgListener = null;
+let activeMsgRef = null;
+let chatsListener = null;
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function renderChatPreview(chatId, data) {
+  const div = document.createElement('div');
+  div.className = 'chat-preview' + (chatId === activeChatId ? ' active' : '');
+  div.dataset.chatId = chatId;
+  div.onclick = function() { openChat(chatId); };
+  const unread = data.unreadAdmin || 0;
+  div.innerHTML = '<div class="avatar">' + getInitials(data.userName) + '</div>'
+    + '<div class="info"><div class="name">' + escapeHtml(data.userName) + '</div>'
+    + '<div class="last-msg">' + escapeHtml(data.lastMessage || 'No messages yet') + '</div></div>'
+    + '<div class="meta"><div class="time">' + (data.lastTimestamp ? formatChatTime(data.lastTimestamp) : '') + '</div>'
+    + (unread > 0 ? '<span class="unread">' + unread + '</span>' : '') + '</div>';
+  return div;
+}
+
+function loadChatList() {
+  const container = document.getElementById('chatList');
+  container.innerHTML = '<div class="loading" style="padding:30px;"><div class="spinner"></div></div>';
+  if (chatsListener) chatsListener.off();
+  chatsListener = CHATS_REF.orderByChild('lastTimestamp').on('value', (snap) => {
+    container.innerHTML = '';
+    const chats = [];
+    snap.forEach(child => {
+      chats.push({ id: child.key, data: child.val() });
+    });
+    chats.sort((a, b) => (b.data.lastTimestamp || 0) - (a.data.lastTimestamp || 0));
+    document.getElementById('chatCount').textContent = chats.length + ' conversation' + (chats.length !== 1 ? 's' : '');
+    let totalUnread = 0;
+    chats.forEach(c => {
+      totalUnread += c.data.unreadAdmin || 0;
+      container.appendChild(renderChatPreview(c.id, c.data));
+    });
+    const sidebarBadge = document.getElementById('sidebarUnread');
+    if (totalUnread > 0) { sidebarBadge.textContent = totalUnread > 99 ? '99+' : totalUnread; sidebarBadge.style.display = 'inline'; }
+    else { sidebarBadge.style.display = 'none'; }
+    if (chats.length === 0) {
+      container.innerHTML = '<div class="empty-state" style="padding:30px;"><i class="fa-solid fa-inbox"></i><h3>No conversations</h3><p>No support messages yet</p></div>';
+    }
+  });
+}
+
+function openChat(chatId) {
+  if (activeMsgRef && activeMsgListener) { activeMsgRef.off(); activeMsgRef = null; activeMsgListener = null; }
+  activeChatId = chatId;
+  document.getElementById('deleteConversationBtn').onclick = () => deleteConversation();
+  document.querySelectorAll('.chat-preview').forEach(el => el.classList.remove('active'));
+  const preview = document.querySelector('.chat-preview[data-chat-id="' + chatId + '"]');
+  if (preview) preview.classList.add('active');
+  const chatViewEmpty = document.getElementById('chatViewEmpty');
+  const chatViewActive = document.getElementById('chatViewActive');
+  chatViewEmpty.style.display = 'none';
+  chatViewActive.style.display = 'flex';
+  CHATS_REF.child(chatId).once('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+    document.getElementById('activeChatAvatar').textContent = getInitials(data.userName);
+    document.getElementById('activeChatName').textContent = data.userName;
+    document.getElementById('activeChatEmail').textContent = data.userEmail;
+  });
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '<div class="msgs-loading" style="text-align:center;padding:20px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+  const msgRef = messagesRef(chatId);
+  activeMsgRef = msgRef;
+  activeMsgListener = msgRef.orderByChild('timestamp').on('child_added', (snap) => {
+    const msg = snap.val();
+    if (!msg) return;
+    const loadingEl = container.querySelector('.msgs-loading');
+    if (loadingEl) loadingEl.remove();
+    const existing = container.querySelector('[data-msgid="' + snap.key + '"]');
+    if (existing) return;
+    const isAdmin = msg.sender === 'admin';
+    const div = document.createElement('div');
+    div.className = 'msg ' + (isAdmin ? 'sent' : 'received');
+    div.dataset.msgId = snap.key;
+    let html = '';
+    if (!isAdmin) html += '<div class="sender-name">' + escapeHtml(msg.senderName) + '</div>';
+    html += '<div>' + escapeHtml(msg.text) + '</div>';
+    const seenIcon = msg.seen ? '<span class="seen"><i class="fa-solid fa-check-double"></i></span>' : '<span><i class="fa-solid fa-check"></i></span>';
+    html += '<div class="time">' + formatChatTime(msg.timestamp) + (isAdmin ? ' <span class="status">' + seenIcon + '</span>' : '') + '</div>';
+    div.innerHTML = html;
+    container.appendChild(div);
+    scrollToBottom(container);
+    if (!msg.seen && !isAdmin) {
+      msgRef.child(snap.key).update({ seen: true });
+    }
+  });
+  msgRef.once('value', snap => {
+    if (!snap.exists() || !snap.hasChildren()) {
+      container.innerHTML = '<div class="msgs-empty" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-comment-dots" style="font-size:2rem;display:block;margin-bottom:8px;"></i>No messages yet. Send a reply to start the conversation.</div>';
+    }
+  });
+  msgRef.on('child_removed', (snap) => {
+    const el = container.querySelector('[data-msgid="' + snap.key + '"]');
+    if (el) el.remove();
+    if (container.children.length === 0) {
+      container.innerHTML = '<div class="msgs-empty" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-comment-dots" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Conversation cleared</div>';
+    }
+  });
+  CHATS_REF.child(chatId).update({ unreadAdmin: 0 });
+  document.getElementById('chatListPanel').classList.add('hide-mobile-panel');
+  document.getElementById('chatViewPanel').classList.add('show-mobile-panel');
+}
+
+function showChatList() {
+  document.getElementById('chatListPanel').classList.remove('hide-mobile-panel');
+  document.getElementById('chatViewPanel').classList.remove('show-mobile-panel');
+}
+
+function handleAdminSend() {
+  const input = document.getElementById('adminMsgInput');
+  const btn = document.getElementById('adminSendBtn');
+  const text = input.value.trim();
+  if (!text || !activeChatId) return;
+  const roleLabel = adminUser.role === 'superadmin' ? 'Superadmin' : 'Admin';
+  const senderName = adminUser.fullName + ' (' + roleLabel + ')';
+  btn.disabled = true;
+  sendMessage(activeChatId, 'admin', senderName, text).then(() => {
+    input.value = '';
+    btn.disabled = false;
+    CHATS_REF.child(activeChatId).update({ unreadUser: firebase.database.ServerValue.increment(1) });
+  }).catch(err => {
+    btn.disabled = false;
+    toast('Failed to send: ' + err.message, 'error');
+  });
+}
+
+document.getElementById('adminMsgInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleAdminSend();
+});
+
+function deleteConversation() {
+  if (!activeChatId) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = '<div class="modal-box"><div class="modal-header"><h3>Delete Conversation</h3></div><div class="modal-body"><p style="margin:0 0 20px;font-size:0.95rem;color:#444;">Delete this entire conversation? This cannot be undone.</p><div class="modal-actions"><button class="btn-modal btn-modal-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancel</button><button class="btn-modal btn-modal-danger" id="delete-chat-yes">Delete</button></div></div></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('delete-chat-yes').onclick = () => {
+    overlay.remove();
+    const chatId = activeChatId;
+    activeChatId = null;
+    if (activeMsgRef) { activeMsgRef.off(); activeMsgRef = null; activeMsgListener = null; }
+    document.getElementById('chatViewActive').style.display = 'none';
+    document.getElementById('chatViewEmpty').style.display = 'flex';
+    deleteChat(chatId).catch(err => toast('Failed to delete: ' + err.message, 'error'));
+  };
+}
+
+loadChatList();
+});
+</script>
+</body>
+</html>

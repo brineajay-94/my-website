@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Ajay Kafle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root {
+  --primary: #ff6b00;
+  --primary-dark: #e05f00;
+  --primary-light: #fff0e6;
+  --primary-gradient: linear-gradient(135deg, #ff6b00, #ff8c42);
+  --dark: #1a1a2e;
+  --light: #fff;
+  --bg: #f4f5f7;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --card-hover-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --text: #2c3e50;
+  --text-muted: #8e99a4;
+  --border: #eef0f2;
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #e67e22;
+  --info: #3498db;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+nav {
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100;
+  padding: 0 5%; height: 64px; display: flex; justify-content: space-between; align-items: center;
+}
+nav .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
+nav .logo img { width: 38px; height: 38px; border-radius: 50%; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-right a, .nav-right button {
+  text-decoration: none; color: var(--text); font-weight: 500; font-size: 0.85rem;
+  padding: 7px 14px; border-radius: var(--radius-sm); transition: all 0.2s;
+  background: none; border: none; cursor: pointer; font-family: 'Poppins', sans-serif;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-right a:hover { background: var(--bg); color: var(--primary); }
+.nav-right .btn-logout {
+  background: #fee8e8; color: var(--danger); font-weight: 600;
+}
+.nav-right .btn-logout:hover { background: var(--danger); color: white; }
+.nav-right .btn-admin {
+  background: var(--primary-light); color: var(--primary); font-weight: 600;
+}
+.nav-right .btn-admin:hover { background: var(--primary); color: white; }
+
+.container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 60px; }
+
+.profile-hero {
+  background: var(--light); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 28px 32px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  position: relative; overflow: hidden;
+}
+.profile-hero::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 260px; height: 260px;
+  background: var(--primary-gradient); opacity: 0.04; border-radius: 50%;
+  transform: translate(60px, -80px);
+}
+.avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--primary-gradient); display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.6rem; font-weight: 700; flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(255,107,0,0.25);
+}
+.profile-info { flex: 1; min-width: 200px; }
+.profile-info h1 { font-family: 'Caveat', cursive; font-size: 2rem; color: var(--primary); line-height: 1.2; }
+.profile-info .email { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+.profile-info .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 14px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+}
+.badge-verified { background: #e8f8f0; color: var(--success); }
+.badge-pending { background: #fef5e7; color: var(--warning); }
+.badge-admin { background: #fde8e8; color: var(--danger); }
+.badge-user { background: #e8f0fe; color: var(--info); }
+.badge-since { background: #f0f0f0; color: var(--text-muted); }
+.badge-info { background: #e8f0fe; color: var(--info); }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--light); border-radius: var(--radius-sm); padding: 18px 20px;
+  box-shadow: var(--card-shadow); text-align: center; transition: 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--card-hover-shadow); }
+.stat-card .stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.stat-card .stat-num { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.stat-card .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+.actions-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px;
+}
+.action-card {
+  background: var(--light); border-radius: var(--radius-sm); padding: 18px 14px;
+  box-shadow: var(--card-shadow); text-align: center; cursor: pointer;
+  text-decoration: none; color: var(--text); transition: all 0.2s; border: 2px solid transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.action-card:hover { transform: translateY(-3px); box-shadow: var(--card-hover-shadow); border-color: var(--primary); }
+.action-card .ac-icon {
+  width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: white;
+}
+.action-card .ac-label { font-size: 0.8rem; font-weight: 500; }
+.ac-blue { background: linear-gradient(135deg, #3498db, #5dade2); }
+.ac-green { background: linear-gradient(135deg, #27ae60, #58d68d); }
+.ac-red { background: linear-gradient(135deg, #e74c3c, #f1948a); }
+.ac-purple { background: linear-gradient(135deg, #8e44ad, #bb8fce); }
+
+.section-title {
+  font-size: 1.1rem; font-weight: 600; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title i { color: var(--primary); }
+
+.websites-grid { display: grid; gap: 14px; }
+
+.site-card {
+  background: var(--light); border-radius: var(--radius); padding: 20px 24px;
+  box-shadow: var(--card-shadow); display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 14px;
+  transition: all 0.2s; border-left: 4px solid var(--primary);
+}
+.site-card:hover { transform: translateY(-2px); box-shadow: var(--card-hover-shadow); }
+.site-card .site-info { flex: 1; min-width: 180px; }
+.site-card .site-info h3 { font-size: 1rem; font-weight: 600; }
+.site-card .site-info .site-url {
+  display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;
+  text-decoration: none; word-break: break-all;
+}
+.site-card .site-info .site-url:hover { color: var(--primary); }
+.site-card .site-info .site-plan { font-size: 0.78rem; color: #888; margin-top: 4px; }
+.site-card .site-info .site-plan i { width: 14px; color: var(--primary); }
+.site-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none;
+  font-weight: 600; font-size: 0.8rem; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Poppins', sans-serif; cursor: pointer; border: none;
+}
+.btn-primary { background: var(--primary-gradient); color: white; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255,107,0,0.25); }
+.btn-outline { border: 2px solid var(--primary); color: var(--primary); background: transparent; }
+.btn-outline:hover { background: var(--primary); color: white; }
+.btn-ghost { background: var(--bg); color: var(--text-muted); }
+.btn-ghost:hover { background: #e8e8e8; color: var(--text); }
+
+.empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+.empty-state i { font-size: 3rem; margin-bottom: 14px; opacity: 0.3; color: var(--primary); }
+.empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 4px; }
+.empty-state p { font-size: 0.85rem; }
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skel-hero { height: 100px; margin-bottom: 24px; border-radius: var(--radius); }
+.skel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.skel-stat { height: 80px; border-radius: var(--radius-sm); }
+.skel-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+.skel-action { height: 80px; border-radius: var(--radius-sm); }
+.skel-title { height: 24px; width: 200px; margin-bottom: 14px; }
+.skel-card { height: 72px; border-radius: var(--radius); margin-bottom: 14px; }
+
+.footer-line { text-align: center; padding: 10px 20px 30px; color: var(--text-muted); font-size: 0.8rem; }
+.footer-line a { color: var(--primary); text-decoration: none; }
+
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  padding: 12px 18px; border-radius: 8px; color: white; font-size: 0.85rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;
+  min-width: 260px; max-width: 400px; pointer-events: auto; animation: slideIn 0.3s ease;
+}
+.toast-success { background: var(--success); }
+.toast-error { background: var(--danger); }
+.toast-info { background: var(--info); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@media (max-width: 768px) {
+  nav { padding: 0 16px; height: 58px; }
+  .nav-right a span.nav-label { display: none; }
+  .container { padding: 20px 16px 40px; }
+  .profile-hero { padding: 20px; gap: 16px; }
+  .avatar { width: 56px; height: 56px; font-size: 1.3rem; }
+  .profile-info h1 { font-size: 1.6rem; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-card .stat-num { font-size: 1.3rem; }
+  .actions-row { grid-template-columns: repeat(2, 1fr); }
+  .site-card { padding: 16px 18px; flex-direction: column; align-items: stretch; }
+  .site-actions { justify-content: flex-start; }
+}
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-card { padding: 12px 8px; }
+  .stat-card .stat-num { font-size: 1.1rem; }
+  .stat-card .stat-icon { font-size: 1.2rem; }
+}
+.unverified-banner {
+  background: #fff3e0; border-bottom: 2px solid #ff9800; padding: 10px 20px;
+  display: flex; align-items: center; gap: 10px; font-size: .88rem; color: #e65100;
+  position: sticky; top: 0; z-index: 100;
+}
+.unverified-banner i { font-size: 1.1rem; }
+.unverified-banner a { color: var(--primary); font-weight: 600; text-decoration: underline; }
+.unverified-banner .banner-close {
+  margin-left: auto; background: none; border: none; font-size: 1.3rem;
+  cursor: pointer; color: #e65100; padding: 0 4px; line-height: 1;
+}
+
+.msg-preview {
+  background: var(--light); border-radius: var(--radius-sm); padding: 14px 18px;
+  box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 12px;
+  transition: all 0.2s; cursor: pointer; text-decoration: none; color: var(--text);
+  border-left: 3px solid var(--primary);
+}
+.msg-preview:hover { transform: translateY(-2px); box-shadow: var(--card-hover-shadow); }
+.msg-preview .msg-icon {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0;
+}
+.msg-preview .msg-info { flex: 1; min-width: 0; }
+.msg-preview .msg-info .msg-text { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-preview .msg-info .msg-time { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+.msg-preview .msg-info .msg-from { font-size: .72rem; color: var(--primary); font-weight: 600; }
+.msg-preview .msg-arrow { color: var(--text-muted); font-size: .85rem; }
+.msg-preview.unseen { border-left-color: var(--danger); background: #fff8f6; }
+
+.panel-overlay {
+  position: fixed; inset: 0; background: #fff; z-index: 20000;
+  display: none; flex-direction: column;
+}
+.panel-overlay.active { display: flex; }
+.panel-bar {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  background: #f8f9fa; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.panel-bar .panel-url {
+  flex: 1; font-size: .82rem; color: var(--text-muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.panel-bar button {
+  background: none; border: none; font-size: 1.1rem; cursor: pointer;
+  color: var(--text-muted); padding: 6px 10px; border-radius: var(--radius-sm);
+  transition: 0.15s;
+}
+.panel-bar button:hover { background: #e8e8e8; color: var(--danger); }
+.panel-bar .btn-open-ext {
+  color: var(--primary); text-decoration: none; font-size: .85rem;
+  display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px;
+  border-radius: var(--radius-sm); transition: 0.15s;
+}
+.panel-bar .btn-open-ext:hover { background: var(--primary-light); }
+.panel-frame { flex: 1; border: none; min-height: 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img src="logo.png" alt="Logo">
+    <span>Ajay Kafle</span>
+  </div>
+  <div class="nav-right">
+    <a href="support.html"><i class="fa-solid fa-headset"></i> <span class="nav-label">Support</span></a>
+    <a href="plans.html"><i class="fa-solid fa-tag"></i> <span class="nav-label">Pricing</span></a>
+    <a href="account.html"><i class="fa-solid fa-user"></i> <span class="nav-label">Account</span></a>
+    <a href="admin/index.html" id="adminLink" style="display:none;" class="btn-admin"><i class="fa-solid fa-shield-halved"></i> <span class="nav-label">Admin</span></a>
+    <a href="index.html"><i class="fa-solid fa-house"></i> <span class="nav-label">Home</span></a>
+    <button onclick="logout()" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> <span class="nav-label">Logout</span></button>
+  </div>
+</nav>
+
+<div id="unverifiedBanner" class="unverified-banner" style="display:none;">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span>Your account is not verified. <a href="account.html">Add a phone number</a> to get verified and unlock all features.</span>
+  <button onclick="this.parentElement.style.display='none'" class="banner-close">&times;</button>
+</div>
+
+<div class="container" id="appContent">
+  <div id="loadingSkeleton">
+    <div class="skeleton skel-hero"></div>
+    <div class="skel-stats"><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div></div>
+    <div class="skel-actions"><div class="skeleton skel-action"></div><div class="skeleton skel-action"></div><div class="skeleton skel-action"></div><div class="skeleton skel-action"></div></div>
+    <div class="skeleton skel-title"></div>
+    <div class="skeleton skel-card"></div>
+    <div class="skeleton skel-card"></div>
+  </div>
+
+  <div id="dashboardContent" style="display:none;">
+
+    <div class="profile-hero">
+      <div class="avatar" id="userAvatar">AK</div>
+      <div class="profile-info">
+        <h1 id="userName"></h1>
+        <div class="email" id="userEmail"></div>
+        <div class="badges" id="badgesContainer"></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="color:var(--primary);"><i class="fa-solid fa-globe"></i></div>
+        <div class="stat-num" id="statWebsites">0</div>
+        <div class="stat-label">Websites</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="color:var(--success);"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-num" id="statStatus">-</div>
+        <div class="stat-label">Status</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="color:var(--info);"><i class="fa-solid fa-user-tag"></i></div>
+        <div class="stat-num" id="statRole">-</div>
+        <div class="stat-label">Role</div>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <a href="account.html" class="action-card">
+        <div class="ac-icon ac-blue"><i class="fa-solid fa-user-gear"></i></div>
+        <div class="ac-label">My Account</div>
+      </a>
+      <a href="index.html" class="action-card">
+        <div class="ac-icon ac-green"><i class="fa-solid fa-house"></i></div>
+        <div class="ac-label">Portfolio</div>
+      </a>
+      <a href="admin/index.html" id="actionAdmin" class="action-card" style="display:none;">
+        <div class="ac-icon ac-red"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="ac-label">Admin Panel</div>
+      </a>
+      <a href="support.html" class="action-card">
+        <div class="ac-icon ac-purple"><i class="fa-solid fa-headset"></i></div>
+        <div class="ac-label">Support</div>
+      </a>
+    </div>
+
+    <div class="section-title" id="recentMsgTitle" style="display:none;"><i class="fa-solid fa-comment-dots"></i> Recent Messages</div>
+    <div id="recentMessages"></div>
+
+    <div id="sitesSection">
+      <div class="section-title"><i class="fa-solid fa-globe"></i> Your Websites</div>
+      <div class="websites-grid" id="websitesList">
+        <div class="empty-state">
+          <i class="fa-solid fa-globe"></i>
+          <h3>No websites assigned</h3>
+          <p>Contact the admin to get websites assigned to your account.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="panel-overlay" id="panelOverlay">
+  <div class="panel-bar">
+    <span class="panel-url" id="panelUrl"></span>
+    <a class="btn-open-ext" id="panelOpenExt" target="_blank" rel="noopener" title="Open in new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <button onclick="closePanel()" title="Close panel"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <iframe class="panel-frame" id="panelFrame" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="footer-line">
+  &copy; <span id="currentYear"></span> <a href="index.html">Ajay Kafle</a> &middot; All rights reserved.
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/support.js"></script>
+<script src="js/dashboard.js"></script>
+<script>loadDashboard();</script>
+</body>
+</html>

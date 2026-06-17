@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Users - Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">AK</div>
+    <h2>Ajay Kafle</h2>
+    <p>Admin Panel</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="index.html"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="users.html" class="active"><i class="fa-solid fa-users"></i> All Users</a>
+    <a href="websites.html"><i class="fa-solid fa-globe"></i> Websites</a>
+    <a href="verified-users.html"><i class="fa-solid fa-user-check"></i> Verified Users</a>
+    <a href="plans.html"><i class="fa-solid fa-tag"></i> Plans</a>
+    <a href="support.html"><i class="fa-solid fa-headset"></i> Support <span class="badge" id="sidebarUnread" style="display:none;">0</span></a>
+    <div class="nav-label">Links</div>
+    <a href="../dashboard.html"><i class="fa-solid fa-gauge"></i> User Dashboard</a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="../index.html"><i class="fa-solid fa-house"></i> Main Site</a>
+    <a href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <h1>All Users</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box hide-mobile">
+        <i class="fa-solid fa-search"></i>
+        <input type="text" id="userSearch" placeholder="Search users..." autocomplete="off">
+      </div>
+      <button onclick="openAddUser()" title="Add User"><i class="fa-solid fa-user-plus"></i> <span class="hide-mobile">Add User</span></button>
+      <button onclick="openAddWebsite()" title="Add Website"><i class="fa-solid fa-plus"></i> <span class="hide-mobile">Add Website</span></button>
+      <button onclick="loadUsers()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-header">
+      <h2><i class="fa-solid fa-users"></i> Registered Users <span class="badge badge-info" id="userCount">0</span></h2>
+      <div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV('usersTable','users-export')"><i class="fa-solid fa-download"></i> Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddUser()"><i class="fa-solid fa-user-plus"></i> Add User</button>
+      </div>
+    </div>
+
+    <div class="search-box" style="margin-bottom:12px;display:none;" id="mobileSearch">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" id="userSearchMobile" placeholder="Search users..." autocomplete="off">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Contact</th><th>Role</th><th>Verified</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+      <div class="empty-state empty-search" style="display:none;"><i class="fa-solid fa-search"></i><h3>No matches</h3><p>Try a different search term</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/admin-ui.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+auth.onAuthStateChanged(async u => {
+  if (!u) { window.location.href = '../login.html'; return; }
+  try { const r = await apiGetUser(u.uid); if (r.success) localStorage.setItem('userData', JSON.stringify(r.user)); } catch(e) {}
+  if (!isAdmin()) { window.location.href = '../dashboard.html'; return; }
+  initSupportBadge();
+  loadUsers();
+  setTimeout(() => {
+    initTableSearch('userSearch', 'usersTable');
+    initTableSearch('userSearchMobile', 'usersTable');
+  }, 500);
+});
+
+function openAddUser() {
+  const uid = ++modalIdCounter;
+  const id = createModal('Add New User', `
+    <div class="modal-field">
+      <label>Full Name</label>
+      <input type="text" id="au-name-${uid}" placeholder="Enter full name">
+    </div>
+    <div class="modal-field">
+      <label>Email</label>
+      <input type="email" id="au-email-${uid}" placeholder="Enter email address">
+    </div>
+    <div class="modal-field">
+      <label>Password</label>
+      <input type="password" id="au-pw-${uid}" placeholder="Min 6 characters" minlength="6">
+    </div>
+    <div class="modal-field">
+      <label>Contact Number</label>
+      <input type="tel" id="au-phone-${uid}" placeholder="Enter contact number">
+    </div>
+    <div class="modal-field">
+      <label>Role</label>
+      <select id="au-role-${uid}">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div id="au-error-${uid}" style="color:var(--danger);font-size:0.85rem;margin:4px 0;display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-secondary" onclick="closeParentModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-primary" id="au-save-${uid}"><i class="fa-solid fa-plus"></i> Create User</button>
+    </div>
+  `);
+  document.getElementById('au-save-' + uid).onclick = async () => {
+    const name = document.getElementById('au-name-' + uid).value.trim();
+    const email = document.getElementById('au-email-' + uid).value.trim();
+    const pw = document.getElementById('au-pw-' + uid).value;
+    const phone = document.getElementById('au-phone-' + uid).value.trim();
+    const role = document.getElementById('au-role-' + uid).value;
+    const errorEl = document.getElementById('au-error-' + uid);
+    const btn = document.getElementById('au-save-' + uid);
+
+    if (!name || !email || !pw || !phone) {
+      errorEl.textContent = 'All fields are required'; errorEl.style.display = 'block'; return;
+    }
+    if (pw.length < 6) {
+      errorEl.textContent = 'Password must be at least 6 characters'; errorEl.style.display = 'block'; return;
+    }
+
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+    try {
+      const createUserFn = firebase.functions().httpsCallable('createUser');
+      const result = await createUserFn({ fullName: name, email, password: pw, contactNumber: phone, role });
+      if (result.data.success) {
+        closeModal(id);
+        toast('User created successfully', 'success');
+        loadUsers();
+      }
+    } catch (err) {
+      const msg = err.code === 'unauthenticated' ? 'Session expired. Please login again.'
+        : err.code === 'permission-denied' ? 'You do not have permission.'
+        : err.message || 'Failed to create user';
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-plus"></i> Create User';
+    }
+  };
+}
+</script>
+</body>
+</html>
