@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="icon" type="image/png" href="ajay.png">
 <style>
-:root { --primary: #ff6b00; --secondary: #ff8c42; --dark: #222; --light: #fff; --bg: #fafafa; --shadow: 0 10px 30px rgba(0,0,0,0.08); }
+:root { --primary: #ff6b00; --secondary: #ff8c42; --dark: #222; --light: #fff; --bg: #fafafa; --shadow: 0 10px 30px rgba(0,0,0,0.08); --modal-overlay: rgba(0,0,0,0.5); }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 .auth-wrap { width: 100%; max-width: 420px; padding: 20px; }
@@ -30,6 +30,17 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--d
 .back-link { display: inline-block; margin-bottom: 20px; color: var(--dark); text-decoration: none; font-size: 0.9rem; }
 .back-link i { margin-right: 5px; }
 .back-link:hover { color: var(--primary); }
+.forgot-link { display: block; text-align: right; font-size: 0.85rem; margin-top: 6px; }
+.forgot-link a { color: var(--primary); text-decoration: none; font-weight: 500; }
+.forgot-link a:hover { text-decoration: underline; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: var(--modal-overlay); z-index: 2000; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: var(--light); border-radius: 20px; padding: 36px 30px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.15); text-align: center; }
+.modal-box h2 { font-size: 1.4rem; margin-bottom: 8px; }
+.modal-box p { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+.modal-box .form-group { margin-bottom: 0; }
+.modal-box .btn { margin-top: 14px; }
+.modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #999; }
 </style>
 </head>
 <body>
@@ -48,6 +59,7 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--d
       <div class="form-group">
         <label for="password">Password</label>
         <input type="password" id="password" required placeholder="Enter your password">
+        <div class="forgot-link"><a href="#" onclick="showForgotModal();return false;">Forgot Password?</a></div>
       </div>
       <div id="errorMsg" class="error-msg"></div>
       <button type="submit" class="btn">Login</button>
@@ -57,6 +69,22 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--d
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box" style="position:relative;">
+    <button class="modal-close" onclick="closeForgotModal()">&times;</button>
+    <h2>Reset Password</h2>
+    <p>Enter your email and we'll send you a link to reset your password.</p>
+    <form id="forgotForm">
+      <div class="form-group">
+        <input type="email" id="resetEmail" required placeholder="Your email address">
+      </div>
+      <div id="forgotError" class="error-msg" style="margin-bottom:10px;"></div>
+      <button type="submit" class="btn" id="resetBtn">Send Reset Link</button>
+    </form>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -65,6 +93,28 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--d
 <script src="js/auth.js"></script>
 <script>
 if (localStorage.getItem('userData')) { window.location.href = 'dashboard.html'; }
+
+function showForgotModal() { document.getElementById('forgotModal').classList.add('show'); }
+function closeForgotModal() { document.getElementById('forgotModal').classList.remove('show'); document.getElementById('forgotError').style.display = 'none'; }
+document.getElementById('forgotModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeForgotModal(); });
+document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('resetEmail').value.trim();
+  const errorEl = document.getElementById('forgotError');
+  const btn = document.getElementById('resetBtn');
+  if (!email) { errorEl.textContent = 'Please enter your email'; errorEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    await firebase.auth().sendPasswordResetEmail(email);
+    errorEl.style.color = '#27ae60'; errorEl.textContent = 'Reset link sent! Check your inbox.'; errorEl.style.display = 'block';
+    btn.textContent = 'Sent';
+    setTimeout(closeForgotModal, 2500);
+  } catch (err) {
+    errorEl.style.color = '#e74c3c'; errorEl.textContent = err.message; errorEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send Reset Link';
+  }
+});
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
